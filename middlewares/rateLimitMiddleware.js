@@ -19,7 +19,6 @@ const setCount = async (ip, count, timestamp) => {
 const checkRateLimit = async (ip) => {
     let window = process.env.WINDOW;
     let maxRequests = process.env.MAX_REQUESTS;
-    console.log(process.env.WINDOW, process.env.MAX_REQUESTS);
 
     let userSession = await redisClient.hGetAll(`user-session:${ip}`);
 
@@ -32,7 +31,6 @@ const checkRateLimit = async (ip) => {
     let count = userSession.count;
     let timestamp = userSession.timestamp;
 
-    console.log(count, Date.now() - timestamp, window, Date.now() - timestamp > window);
     // Check if window has elapsed.
     if (Date.now() - timestamp > window) {
         await setCount(ip, 1, Date.now());
@@ -51,10 +49,8 @@ const checkRateLimit = async (ip) => {
 const handle = async (req, res, next) => {
     const clientIP = req.ip;
     let result = await checkRateLimit(clientIP);
-    console.log(result);
     try {
         if (result) {
-            console.log("Request allowed");
             next();
         } else {
             console.log("Rate limit exceeded, please try again later");
